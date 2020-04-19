@@ -154,7 +154,7 @@ trait HybridRelations
         // foreign key name by using the name of the relationship function, which
         // when combined with an "_id" should conventionally match the columns.
         if (is_null($foreignKey)) {
-            $foreignKey = Str::snake($relation).'_id';
+            $foreignKey = Str::snake($relation) . '_id';
         }
 
         $instance = new $related();
@@ -178,7 +178,7 @@ trait HybridRelations
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphTo
      */
-    public function morphTo($name = null, $type = null, $id = null)
+    public function morphTo($name = null, $type = null, $id = null, $ownerKey = NULL)
     {
         // If no name is provided, we will use the backtrace to get the function name
         // since that is most likely the name of the polymorphic interface. We can
@@ -196,7 +196,12 @@ trait HybridRelations
         // there are multiple types in the morph and we can't use single queries.
         if (is_null($class = $this->$type)) {
             return new MorphTo(
-                $this->newQuery(), $this, $id, null, $type, $name
+                $this->newQuery(),
+                $this,
+                $id,
+                null,
+                $type,
+                $name
             );
         }
 
@@ -209,7 +214,12 @@ trait HybridRelations
             $instance = new $class();
 
             return new MorphTo(
-                $instance->newQuery(), $this, $id, $instance->getKeyName(), $type, $name
+                $instance->newQuery(),
+                $this,
+                $id,
+                $instance->getKeyName(),
+                $type,
+                $name
             );
         }
     }
@@ -227,14 +237,20 @@ trait HybridRelations
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function belongsToMany($related, $table = null, $foreignPivotKey = null, $relatedPivotKey = null,
-    $parentKey = null, $relatedKey = null, $relation = null)
-    {
+    public function belongsToMany(
+        $related,
+        $table = null,
+        $foreignPivotKey = null,
+        $relatedPivotKey = null,
+        $parentKey = null,
+        $relatedKey = null,
+        $relation = null
+    ) {
         // If no relationship name was passed, we will pull backtraces to get the
         // name of the calling function. We will use that function name as the
         // title of this relation since that is a great convention to apply.
         if (is_null($relation)) {
-            
+
             // Laravel >= 5.4
             if (method_exists($this, 'guessBelongsToManyRelation')) {
                 $relation = $this->guessBelongsToManyRelation();
@@ -245,18 +261,25 @@ trait HybridRelations
 
         // Check if it is a relation with an original model.
         if (!is_subclass_of($related, 'Moloquent\Eloquent\Model')) {
-            return parent::belongsToMany($related, $table = null, $foreignPivotKey = null, $relatedPivotKey = null,
-            $parentKey = null, $relatedKey = null, $relation = null);
+            return parent::belongsToMany(
+                $related,
+                $table = null,
+                $foreignPivotKey = null,
+                $relatedPivotKey = null,
+                $parentKey = null,
+                $relatedKey = null,
+                $relation = null
+            );
         }
 
         // First, we'll need to determine the foreign key and "other key" for the
         // relationship. Once we have determined the keys we'll make the query
         // instances as well as the relationship instances we need for this.
-        $foreignKey = $foreignKey ?: $this->getForeignKey().'s';
+        $foreignKey = $foreignKey ?: $this->getForeignKey() . 's';
 
         $instance = new $related();
 
-        $otherKey = $otherKey ?: $instance->getForeignKey().'s';
+        $otherKey = $otherKey ?: $instance->getForeignKey() . 's';
 
         // If no table name was provided, we can guess it by concatenating the two
         // models using underscores in alphabetical order. The two model names
@@ -270,7 +293,14 @@ trait HybridRelations
         // appropriate query constraint and entirely manages the hydrations.
         $query = $instance->newQuery();
 
-        return new BelongsToMany($related, $table = null, $foreignPivotKey = null, $relatedPivotKey = null,
-        $parentKey = null, $relatedKey = null, $relation = null);
+        return new BelongsToMany(
+            $related,
+            $table = null,
+            $foreignPivotKey = null,
+            $relatedPivotKey = null,
+            $parentKey = null,
+            $relatedKey = null,
+            $relation = null
+        );
     }
 }

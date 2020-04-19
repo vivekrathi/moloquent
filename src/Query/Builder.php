@@ -118,6 +118,7 @@ class Builder extends BaseBuilder
         if (function_exists('app')) {
             $version = app()->version();
             $version = filter_var(explode(')', $version)[0], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // lumen
+            return true;
             return version_compare($version, '5.3', '>=');
         } else {
             $connection = $this->getConnection();
@@ -224,18 +225,18 @@ class Builder extends BaseBuilder
             // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups) {
                 foreach ($this->groups as $column) {
-                    $group['_id'][$column] = '$'.$column;
+                    $group['_id'][$column] = '$' . $column;
 
                     // When grouping, also add the $last operator to each grouped field,
                     // this mimics MySQL's behaviour a bit.
-                    $group[$column] = ['$last' => '$'.$column];
+                    $group[$column] = ['$last' => '$' . $column];
                 }
 
                 // Do the same for other columns that are selected.
                 foreach ($this->columns as $column) {
                     $key = str_replace('.', '_', $column);
 
-                    $group[$key] = ['$last' => '$'.$column];
+                    $group[$key] = ['$last' => '$' . $column];
                 }
             }
 
@@ -258,7 +259,7 @@ class Builder extends BaseBuilder
                     }
                     // Pass other functions directly.
                     else {
-                        $group['aggregate'] = ['$'.$function => '$'.$column];
+                        $group['aggregate'] = ['$' . $function => '$' . $column];
                     }
                 }
             }
@@ -284,7 +285,7 @@ class Builder extends BaseBuilder
 
             // apply unwinds for subdocument array aggregation
             foreach ($unwinds as $unwind) {
-                $pipeline[] = ['$unwind' => '$'.$unwind];
+                $pipeline[] = ['$unwind' => '$' . $unwind];
             }
 
             if ($group) {
@@ -422,7 +423,7 @@ class Builder extends BaseBuilder
         $this->aggregate = compact('function', 'columns');
 
         $previousColumns = $this->columns;
-        
+
         // We will also back up the select bindings since the select clause will be
         // removed when performing the aggregate function. Once the query is run
         // we will add the bindings back onto this query so they can get used.
@@ -1012,10 +1013,10 @@ class Builder extends BaseBuilder
 
             // Convert like to regular expression.
             if (!starts_with($value, '%')) {
-                $regex = '^'.$regex;
+                $regex = '^' . $regex;
             }
             if (!ends_with($value, '%')) {
-                $regex = $regex.'$';
+                $regex = $regex . '$';
             }
 
             $value = new Regex($regex, 'i');
@@ -1027,7 +1028,7 @@ class Builder extends BaseBuilder
             if (!$value instanceof Regex) {
                 $e = explode('/', $value);
                 $flag = end($e);
-                $regstr = substr($value, 1, -(strlen($flag) + 1));
+                $regstr = substr($value, 1, - (strlen($flag) + 1));
                 $value = new Regex($regstr, $flag);
             }
 
@@ -1043,7 +1044,7 @@ class Builder extends BaseBuilder
         } elseif (array_key_exists($operator, $this->conversion)) {
             $query = [$column => [$this->conversion[$operator] => $value]];
         } else {
-            $query = [$column => ['$'.$operator => $value]];
+            $query = [$column => ['$' . $operator => $value]];
         }
 
         return $query;
